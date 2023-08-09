@@ -1,15 +1,15 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ ternary (include "fullname" .) (printf "%s-clusterip" (include "fullname" .)) (eq .Values.service.type "LoadBalancer")}}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     type: openvpn
 spec:
   ports:
-    - name: openvpn
-      port: {{ .Values.service.externalPort }}
-      targetPort: {{ .Values.service.internalPort }}
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      name: openvpn
       protocol: {{ .Values.openvpn.OVPN_PROTO | upper }}
   selector:
     app: {{ template "fullname" . }}

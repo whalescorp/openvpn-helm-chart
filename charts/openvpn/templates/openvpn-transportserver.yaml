@@ -1,0 +1,21 @@
+# this TransportServer is linked with GlobalConfiguration that created by nginx helm chart
+{{- if eq .Values.nginxChartIsPrepared false }}
+{{- fail "Please prepare nginx chart for accepting connections first. README has instructions on how to do it." }}
+{{- end }}
+
+{{- if .Values.createTransportServer }}
+apiVersion: k8s.nginx.org/v1alpha1
+kind: TransportServer
+metadata:
+  name: openvpn-{{ .Values.openvpn.OVPN_PROTO}}
+spec:
+  listener:
+    name: openvpn-{{ .Values.openvpn.OVPN_PROTO }}
+    protocol: {{ .Values.openvpn.OVPN_PROTO | upper }}
+  upstreams:
+  - name: openvpn
+    service: {{ template "fullname" . }}-clusterip
+    port: {{ .Values.service.port }}
+  action:
+    pass: openvpn
+{{- end }}

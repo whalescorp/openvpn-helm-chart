@@ -1,0 +1,38 @@
+podAnnotations:
+  vault.hashicorp.com/agent-inject: 'true'
+  vault.hashicorp.com/role: 'openvpn'
+  vault.hashicorp.com/namespace: 'admin'
+  # secret name and template must match
+  vault.hashicorp.com/secret-volume-path-ca.crt: '/etc/openvpn/certs/pki'
+  vault.hashicorp.com/agent-inject-secret-ca.crt: 'secret/staging/openvpn'  
+  vault.hashicorp.com/agent-inject-template-ca.crt: |
+    {{ with secret "secret/staging/openvpn" }}
+    {{ .Data.data.ca_crt }}
+    {{ end }}
+  vault.hashicorp.com/secret-volume-path-server.crt: '/etc/openvpn/certs/pki/issued'
+  vault.hashicorp.com/agent-inject-secret-server.crt: 'secret/staging/openvpn'  
+  vault.hashicorp.com/agent-inject-template-server.crt: |
+    {{ with secret "secret/staging/openvpn" }}
+    {{ .Data.data.server_crt }}
+    {{ end }}
+  vault.hashicorp.com/secret-volume-path-server.key: '/etc/openvpn/certs/pki/private'
+  vault.hashicorp.com/agent-inject-secret-server.key: 'secret/staging/openvpn'  
+  vault.hashicorp.com/agent-inject-template-server.key: |
+    {{ with secret "secret/staging/openvpn" }}
+    {{ .Data.data.server_key }}
+    {{ end }}
+  vault.hashicorp.com/secret-volume-path-tlscrypt: '/etc/openvpn/certs/pki'
+  vault.hashicorp.com/agent-inject-secret-tlscrypt: 'secret/staging/openvpn'  
+  vault.hashicorp.com/agent-inject-template-tlscrypt: |
+    {{ with secret "secret/staging/openvpn" }}
+    {{ .Data.data.tlscrypt }}
+    {{ end }}
+  vault.hashicorp.com/secret-volume-path-dh.pem: '/etc/openvpn/certs/pki'
+  vault.hashicorp.com/agent-inject-secret-dh.pem: 'secret/staging/openvpn'  
+  vault.hashicorp.com/agent-inject-template-dh.pem: |
+    {{ with secret "secret/staging/openvpn" }}
+    {{ .Data.data.dh_4096 }}
+    {{ end }}
+serviceAccount:
+  create: true
+  name: openvpn-sa

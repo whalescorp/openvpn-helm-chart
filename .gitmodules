@@ -1,3 +1,6 @@
 [submodule "charts/gitea"]
 	path = charts/gitea
 	url = git@github.com:jfelten/gitea-helm-chart.git
+[submodule "charts/openvpn/ovpn-tool"]
+	path = charts/openvpn/ovpn-tool
+	url = https://github.com/opencoff/ovpn-tool.git

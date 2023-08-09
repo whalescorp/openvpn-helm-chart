@@ -44,7 +44,7 @@ data:
       `cat ${EASY_RSA_LOC}/pki/dh.pem`
       </dh>
       <connection>
-      remote ${MY_IP_ADDR} {{ .Values.service.externalPort }} {{ .Values.openvpn.OVPN_PROTO }}
+      remote ${MY_IP_ADDR} ___FQDN_PLACEHOLDER___ {{ .Values.openvpn.OVPN_PROTO }}
       </connection>
       EOF
       cat pki/$1.ovpn
@@ -81,6 +81,8 @@ data:
       ca /etc/openvpn/certs/pki/ca.crt
       cert /etc/openvpn/certs/pki/issued/server.crt
       dh /etc/openvpn/certs/pki/dh.pem
+      tls-crypt /etc/openvpn/certs/pki/tlscrypt
+      cipher AES-256-GCM
       
       key-direction 0
       keepalive 10 60
@@ -88,7 +90,7 @@ data:
       persist-tun
       
       proto {{.Values.openvpn.OVPN_PROTO}}
-      port  {{ .Values.service.internalPort }}
+      port  {{ .Values.service.port }}
       dev tun0
       status /tmp/openvpn-status.log
       
@@ -96,7 +98,7 @@ data:
       group nogroup
       
       push "route NETWORK 255.255.240.0"
-{{ if (.Values.openvpn.OVPN_K8S_POD_NETWORK) (.Values.openvpn.OVPN_K8S_POD_SUBNET) }}
+{{ if or (.Values.openvpn.OVPN_K8S_POD_NETWORK) (.Values.openvpn.OVPN_K8S_POD_SUBNET) }}
       push "route {{ .Values.openvpn.OVPN_K8S_POD_NETWORK }} {{.Values.openvpn.OVPN_K8S_POD_SUBNET}}"
 {{end}}
 

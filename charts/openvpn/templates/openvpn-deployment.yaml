@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "fullname" . }}
@@ -9,6 +9,9 @@ metadata:
 
 spec:
   replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }}
   template:
     metadata:
       labels:
@@ -17,14 +20,21 @@ spec:
         heritage: {{.Release.Service | quote }}
         release: {{.Release.Name | quote }}
         chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/etc/openvpn/setup/configure.sh"]
         ports:
-        - containerPort: {{ .Values.service.internalPort }}
+        - containerPort: {{ .Values.service.port }}
           name: openvpn
         securityContext:
           capabilities:
@@ -45,14 +55,14 @@ spec:
             name: certs
             readOnly: false
       volumes:
-      - name: openvpn
-        configMap:
-          name: {{ template "fullname" . }}
-          defaultMode: 0775
-      - name: certs
-        {{- if .Values.persistence.Enabled }}
-        persistentVolumeClaim:
-          claimName: {{ template "fullname" . }}
-        {{- else }}
+        - name: openvpn
+          configMap:
+            name: {{ template "fullname" . }}
+            defaultMode: 0775
+        - name: certs
+          {{- if .Values.persistence.Enabled }}
+          persistentVolumeClaim:
+            claimName: {{ template "fullname" . }}
+          {{- else }}
           emptyDir: {}
-        {{- end -}}
+          {{- end -}}
