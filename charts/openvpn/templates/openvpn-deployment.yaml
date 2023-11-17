@@ -32,7 +32,11 @@ spec:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.predefinedKeys.Enabled }}
+        command: ["/etc/openvpn/setup/configure.sh", "--skip-cert-gen"]
+        {{- else }}
         command: ["/etc/openvpn/setup/configure.sh"]
+        {{- end }}
         ports:
         - containerPort: {{ .Values.service.port }}
           name: openvpn
@@ -51,9 +55,27 @@ spec:
           - mountPath: /etc/openvpn/setup
             name: openvpn
             readOnly: false
+          {{- if .Values.predefinedKeys.Enabled }}
+          - name: ca_crt
+            mountPath: "/etc/openvpn/certs/pki/ca.crt"
+            subPath: certs.ca_crt
+          - name: server_crt
+            mountPath: "/etc/openvpn/certs/pki/issued/server.crt"
+            subPath: certs.server_crt
+          - name: server_key
+            mountPath: "/etc/openvpn/certs/pki/private/server.key"
+            subPath: certs.server_key
+          - name: tlscrypt
+            mountPath: "/etc/openvpn/certs/pki/tlscrypt"
+            subPath: certs.tlscrypt
+          - name: dh_pem
+            mountPath: "/etc/openvpn/certs/pki/dh.pem"
+            subPath: certs.dh_pem
+          {{- else }}
           - mountPath: /etc/openvpn/certs
             name: certs
             readOnly: false
+          {{- end }}
       volumes:
         - name: openvpn
           configMap:
@@ -63,6 +85,9 @@ spec:
           {{- if .Values.persistence.Enabled }}
           persistentVolumeClaim:
             claimName: {{ template "fullname" . }}
+          {{- else if .Values.predefinedKeys.Enabled }}
+          secret:
+            secretName: openvpn-predefined-keys
           {{- else }}
           emptyDir: {}
           {{- end -}}

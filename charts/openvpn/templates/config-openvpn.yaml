@@ -51,7 +51,11 @@ data:
       
   configure.sh: |-
       #!/bin/sh
-      /etc/openvpn/setup/setup-certs.sh
+      mkdir -p /etc/openvpn/certs/pki/issued/
+      mkdir -p /etc/openvpn/certs/pki/private/
+      if [ "$1" != "--skip-cert-gen" ]; then
+        /etc/openvpn/setup/setup-certs.sh
+      fi
       iptables -t nat -A POSTROUTING -s {{ .Values.openvpn.OVPN_NETWORK }}/{{ .Values.openvpn.OVPN_SUBNET }} -o eth0 -j MASQUERADE
       mkdir -p /dev/net
       if [ ! -c /dev/net/tun ]; then
@@ -97,9 +101,13 @@ data:
       user nobody
       group nogroup
       
-      push "route NETWORK 255.255.240.0"
+      # default route
+      #push "route NETWORK 255.255.240.0"
 {{ if or (.Values.openvpn.OVPN_K8S_POD_NETWORK) (.Values.openvpn.OVPN_K8S_POD_SUBNET) }}
       push "route {{ .Values.openvpn.OVPN_K8S_POD_NETWORK }} {{.Values.openvpn.OVPN_K8S_POD_SUBNET}}"
+{{end}}
+{{ if .Values.additiolalRoutePresent }}
+      {{ .Values.additiolalRoute }}
 {{end}}
 
       push "dhcp-option DOMAIN OVPN_K8S_SEARCH"

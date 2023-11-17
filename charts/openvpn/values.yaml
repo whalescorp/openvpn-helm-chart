@@ -26,7 +26,8 @@ createTransportServer: false
 nginxChartIsPrepared: false
 serviceAccount:
   create: false
-openvpn: 
+additiolalRoutePresent: false
+openvpn:
     # Network allocated for openvpn clients (default: 10.240.0.0).
     OVPN_NETWORK: 10.240.0.0
     # Network subnet allocated for openvpn client (default: 255.255.0.0).

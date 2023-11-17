@@ -1,0 +1,9 @@
+predefinedKeys:
+  Enabled: false
+  ca_crt_b64: "to be defined with --set"
+  server_crt_b64: "to be defined with --set"
+  server_key_b64: "to be defined with --set"
+  tlscrypt_b64: "to be defined with --set"
+  dh_pem_b64: "to be defined with --set"
+
+
