@@ -56,21 +56,21 @@ spec:
             name: openvpn
             readOnly: false
           {{- if .Values.predefinedKeys.Enabled }}
-          - name: ca_crt
+          - name: certs
             mountPath: "/etc/openvpn/certs/pki/ca.crt"
-            subPath: certs.ca_crt
-          - name: server_crt
+            subPath: openvpn-predefined-keys.ca_crt
+          - name: certs
             mountPath: "/etc/openvpn/certs/pki/issued/server.crt"
-            subPath: certs.server_crt
-          - name: server_key
+            subPath: openvpn-predefined-keys.server_crt
+          - name: certs
             mountPath: "/etc/openvpn/certs/pki/private/server.key"
-            subPath: certs.server_key
-          - name: tlscrypt
+            subPath: openvpn-predefined-keys.server_key
+          - name: certs
             mountPath: "/etc/openvpn/certs/pki/tlscrypt"
-            subPath: certs.tlscrypt
-          - name: dh_pem
+            subPath: openvpn-predefined-keys.tlscrypt
+          - name: certs
             mountPath: "/etc/openvpn/certs/pki/dh.pem"
-            subPath: certs.dh_pem
+            subPath: openvpn-predefined-keys.dh_pem
           {{- else }}
           - mountPath: /etc/openvpn/certs
             name: certs
