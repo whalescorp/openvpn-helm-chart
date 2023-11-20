@@ -13,7 +13,19 @@ if [ -z $AWS_ZONE ]; then
     exit 1
 fi
 
-INGRESS_NAME="$3"
+AWS_PROFILE="$3"
+if [ -z $AWS_PROFILE ]; then
+    echo "AWS_PROFILE is required"
+    exit 1
+fi
+
+KUBECTL_PROFILE="$4"
+if [ -z $KUBECTL_PROFILE ]; then
+    echo "KUBECTL_PROFILE is required"
+    exit 1
+fi
+
+INGRESS_NAME="$5"
 if [ -z $INGRESS_NAME ]; then
     echo "INGRESS_NAME is required"
     exit 1
@@ -42,7 +54,7 @@ EOM
 function encrypt() {
     PLAINTEXT="$1"
     OUTPUT="$2"
-    aws kms encrypt --key-id $KMS_KEY_ID --region $AWS_ZONE --plaintext fileb://<(echo "$PLAINTEXT") --output text --query CiphertextBlob > $OUTPUT
+    aws --profile=$AWS_PROFILE kms encrypt --key-id $KMS_KEY_ID --region $AWS_ZONE --plaintext fileb://<(echo "$PLAINTEXT") --output text --query CiphertextBlob > $OUTPUT
 }
 
 pushd ovpn-tool
@@ -58,8 +70,8 @@ TLSCRYPT="$(./ovpn-tool/bin/$OS_ARCH/ovpn-tool /tmp/ovpn.db export k8s.gw -E PAS
 CA="$(./ovpn-tool/bin/$OS_ARCH/ovpn-tool /tmp/ovpn.db export k8s.gw -E PASSWORD -jjson | jq '.Config.Cert' -r)"
 SERVER_CERT="$(./ovpn-tool/bin/$OS_ARCH/ovpn-tool /tmp/ovpn.db export k8s.gw -E PASSWORD -jjson | jq '.Servers | .[0].Cert' -r)"
 SERVER_KEY="$(./ovpn-tool/bin/$OS_ARCH/ovpn-tool /tmp/ovpn.db export k8s.gw -E PASSWORD -jjson | jq '.Servers | .[0].Key' -r)"
-INGRESS_NS="$(kubectl get services --all-namespaces  -o jsonpath='{range .items[*]}{.metadata.namespace}' --field-selector metadata.name=$INGRESS_NAME)"
-INGRESS_FQDN="$(kubectl get -n $INGRESS_NS $INGRESS_NAME -o jsonpath='{range .status.loadBalancer.ingress[*]}{.hostname}')"
+INGRESS_NS="$(kubectl --kubeconfig=$HOME/.kube/$KUBECTL_PROFILE get services --all-namespaces  -o jsonpath='{range .items[*]}{.metadata.namespace}' --field-selector metadata.name=$INGRESS_NAME)"
+INGRESS_FQDN="$(kubectl --kubeconfig=$HOME/.kube/$KUBECTL_PROFILE get -n $INGRESS_NS $INGRESS_NAME -o jsonpath='{range .status.loadBalancer.ingress[*]}{.hostname}')"
 mkdir -p ovpn_secrets
 encrypt "$TLSCRYPT" "ovpn_secrets/tlscrypt.enc"
 encrypt "$CA" "ovpn_secrets/ca.crt.enc"
