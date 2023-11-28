@@ -35,7 +35,6 @@ cat > /tmp/ovpn.tmpl <<- EOM
 client
 nobind
 dev tun
-redirect-gateway def1
 data-ciphers AES-256-GCM
 <key>
 {{ .Key }}</key>
